@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score
@@ -27,11 +28,24 @@ pipeline = Pipeline(
     ]
 )
 
+# Parameter grid
+param_grid = {
+    "pca__n_components": [2, 3, 4],
+    "classifier__C": [0.1, 1, 10],
+    "classifier__solver": ["liblinear", "sag", "liblinear"],
+    "classifier__max_iter": [1000],
+}
+
+# Grid search
+grid_search = GridSearchCV(pipeline, param_grid, cv=5, scoring="accuracy")
+
 # Train, predict, and evaluate
-try: 
-    pipeline.fit(X_train, y_train)
-    y_hat = pipeline.predict(X_test)
-    accuracy = accuracy_score(y_test, y_hat)
-    print(f"Test accuracy: {accuracy:.2f}")
+try:
+    grid_search.fit(X_train, y_train)
+    print(f"Best parameters: {grid_search.best_params_}")
+    print(f"Best cross validation score: {grid_search.best_score_:.2f}")
+    y_hat = grid_search.predict(X_test)
+    test_accuracy = accuracy_score(y_test, y_hat)
+    print(f"Test accuracy with best model: {test_accuracy:.2f}")
 except Exception as e:
     print(f"An error occurred: {str(e)}")
